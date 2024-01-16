@@ -1,0 +1,21 @@
+service: olx-parser-lambda
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  memorySize: 512
+  timeout: 30
+  deploymentBucket: 
+    name: ${sls:stage}-olx-parser-bucket-lambda
+
+functions:
+  handleOlxAdvertisementsData:
+    name: ${sls:stage}-handleOlxAdvertisementsData
+    handler: handleOlxAdvertisementsData/index.handler
+    environment: 
+      ENV: ${sls:stage}
+    events:
+      - schedule:
+          rate: rate(1 hour)
+          enabled: false
