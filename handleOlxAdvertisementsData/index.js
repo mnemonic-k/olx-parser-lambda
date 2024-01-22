@@ -1,22 +1,18 @@
 const AWS = require('aws-sdk');
 const ssm = new AWS.SSM();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const mongoose = require('mongoose');
+
+const parserService = require('./services/parser.service.js');
 
 exports.handler = async (event) => {
-  const { ENV } = process.env;
-
-  const ssmParamMongoDBConnectionName = `/olx-parser/${ENV}/MONGODB_URI`;
-
-  const { Parameter: { Value: MONGODB_URI } } = await ssm
-        .getParameter({ Name: ssmParamMongoDBConnectionName }).promise()
-
-  await connectDatabase(MONGODB_URI)
+  await connectDatabase()
+  await parserService.parseOlxData()
 
     return {
       statusCode: 200,
       body: JSON.stringify(
         {
-          message: 'Go Serverless v3.0! Your function executed successfully!',
+          message: 'Your function executed successfully!',
           input: event,
         },
         null,
@@ -25,22 +21,19 @@ exports.handler = async (event) => {
     };
   };
   
-  async function connectDatabase(uri) {
-    const client = new MongoClient(uri, {
-      serverApi: {
-        version: ServerApiVersion.v1,
-        strict: true,
-        deprecationErrors: true,
-      }
-    });
+  async function connectDatabase() {
+    const { ENV } = process.env;
+
+    const ssmParamMongoDBConnectionName = `/olx-parser/${ENV}/MONGODB_URI`;
+  
+    const { Parameter: { Value: MONGODB_URI } } = await ssm
+          .getParameter({ Name: ssmParamMongoDBConnectionName }).promise()
 
     try {
-      await client.db("admin").command({ ping: 1 });
+       await mongoose.connect(MONGODB_URI);
 
-      console.log("Pinged your deployment. You successfully connected to MongoDB!");
+       console.log('Mongoose has been successfully connected!')
     } catch(err) {
-      await client.close();
+      console.log(err)
     }
-
-    return client
   }
