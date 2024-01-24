@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const olxAdPostSchema = new mongoose.Schema({
+  uuid: Number,
   title: String,
   description: String,
   price: String,

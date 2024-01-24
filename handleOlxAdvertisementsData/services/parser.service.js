@@ -37,15 +37,32 @@ async function getPhoneNumber(url) {
 
 async function parseOlxData() {
     try {
-        const response = await axios.get("https://www.olx.ua/uk/nedvizhimost/")
+    const response = await axios.get(`https://www.olx.ua/uk/nedvizhimost`)
     
-        const $ = cheerio.load(response.data);
+    const $ = cheerio.load(response.data);
 
-        const ads = $('div[data-cy=l-card]').slice(0, 10);
+    let currentPage = 1
+
+    const lastPageText = $('[data-testid=pagination-list-item]').last().text().trim()
+    const totalPages = Number(lastPageText)
+
+    console.log(`Total pages: ${totalPages}`)
+    console.log('######################')
+
+    while (currentPage <= totalPages) {
+        try {
+        const response = await axios.get(`https://www.olx.ua/uk/nedvizhimost/?page=${currentPage}`)
+    
+        const $page = cheerio.load(response.data);
+
+        const ads = $page('div[data-cy=l-card]').slice(0, 5);
+
+        console.log(`Page: ${currentPage}`)
+        console.log('######################')
 
         for (const element of ads.toArray()) {
-            const href = $(element).find('.css-rc5s2u').attr('href')
-            const location = $(element).find("[data-testid=location-date]").text().split('-')[0];
+            const href = $page(element).find('.css-rc5s2u').attr('href')
+            const location = $page(element).find("[data-testid=location-date]").text().split('-')[0];
             
             const adDetailsPageUrl = `https://www.olx.ua/${href}`
 
@@ -62,7 +79,10 @@ async function parseOlxData() {
             const seller = $adDetails("[data-testid=user-profile-link] h4").first().text().trim();
             // const contactPhone = await getPhoneNumber(adDetailsPageUrl)
 
+            console.log(`UUID Post: ${uuid}`)
+
             const payload = {
+              uuid,
               title,
               description,
               price,
@@ -72,16 +92,25 @@ async function parseOlxData() {
               location
             }
 
-            console.log(`UUID Post: ${uuid}`)
+            await OlxAdPost.findOneAndUpdate(
+                { uuid }, 
+                payload, 
+                { upsert: true }
+                );
 
-            await OlxAdPost.create({ ...payload });
-
-            console.log('saved successfully!')
+            console.log('success!')
             console.log('-------------------')
         }
-      } catch(err) {
-        console.log(err);
+
+        currentPage += 1
+        } catch(err) {
+        console.log(err.code)
+        }
     }
+      } catch(err) {
+        console.log(err.code);
+    }
+    
 }
 
 module.exports = {
