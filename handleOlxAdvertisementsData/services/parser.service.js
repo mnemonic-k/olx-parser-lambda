@@ -60,7 +60,7 @@ async function parseOlxData() {
             const postedAt = $adDetails("[data-cy=ad-posted-at]").text().trim();
 
             const seller = $adDetails("[data-testid=user-profile-link] h4").first().text().trim();
-            const contactPhone = await getPhoneNumber(adDetailsPageUrl)
+            // const contactPhone = await getPhoneNumber(adDetailsPageUrl)
 
             const payload = {
               title,
@@ -68,7 +68,7 @@ async function parseOlxData() {
               price,
               postedAt,
               seller,
-              contactPhone,
+            //contactPhone,
               location
             }
 
