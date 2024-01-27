@@ -10,5 +10,6 @@ const olxAdPostSchema = new mongoose.Schema({
   contactPhone: String,
   location: String
 });
+// 
 
 module.exports.OlxAdPost = mongoose.model('OlxAdPost', olxAdPostSchema);
