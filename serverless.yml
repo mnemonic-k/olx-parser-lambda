@@ -5,9 +5,20 @@ provider:
   name: aws
   runtime: nodejs18.x
   memorySize: 512
-  timeout: 30
+  timeout: 60
+  stage: dev
+  region: us-east-1
   deploymentBucket: 
     name: ${sls:stage}-olx-parser-bucket-lambda
+  iam:
+    role:
+      statements:
+        - Effect: 'Allow'
+          Action:
+            - "ssm:Describe*"
+            - "ssm:Get*"
+            - "ssm:List*"
+          Resource: '*'
 
 functions:
   handleOlxAdvertisementsData:

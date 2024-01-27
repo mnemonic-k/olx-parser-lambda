@@ -1,0 +1,30 @@
+name: Deploy Serverless App
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install Serverless Framework
+        run: npm install -g serverless
+
+      - name: Deploy
+        run: |
+          serverless config credentials --provider aws --key ${{ secrets.AWS_ACCESS_KEY_ID }} --secret ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          serverless deploy --stage $STAGE --region $AWS_REGION
+        env:
+          STAGE: dev
+          AWS_REGION: us-east-1
