@@ -29,4 +29,4 @@ functions:
     events:
       - schedule:
           rate: rate(1 hour)
-          enabled: false
+          enabled: true
